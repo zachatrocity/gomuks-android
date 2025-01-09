@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">gomuks</string>
+
+    <string name="server_url">Server URL</string>
+    <string name="connect">Connect</string>
+
+    <string name="preference_file_key">app.gomuks.android.server_settings</string>
+    <string name="server_url_key">server_url</string>
+
+    <!-- BasicGeckoViewPrompt strings -->
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="clear_field">Clear</string>
+
+    <string name="cancel">Cancel</string>
+    <string name="wait">Wait</string>
+    <string name="stop">Stop</string>
+
+    <string name="before_unload_message">This page is asking you to confirm that you want to leave - data you have entered may not be saved</string>
+    <string name="before_unload_title">Are you sure?</string>
+    <string name="before_unload_leave_page">Leave Page</string>
+    <string name="before_unload_stay">Stay on Page</string>
+
+    <string name="repost_confirm_message">To display this page, GeckoView must send information that will repeat any action (such as a search or order confirmation) that was performed earlier.</string>
+    <string name="repost_confirm_title">Are you sure?</string>
+    <string name="repost_confirm_resend">Resend</string>
+    <string name="repost_confirm_cancel">Cancel</string>
+</resources>
