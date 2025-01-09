@@ -1,6 +1,7 @@
 package app.gomuks.android
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
 import org.mozilla.geckoview.GeckoResult
@@ -69,15 +70,18 @@ class NavigationDelegate(private val activity: MainActivity) : GeckoSession.Navi
         Log.e("NavigationDelegate", "onLoadError: $uri $error (${errorToString(error.category)}: ${errorToString(error.code)}")
         val serverURL = activity.getServerURL()
         if (uri == null || (serverURL != null && uri.trimEnd('/') == serverURL.trimEnd('/'))) {
-            activity.openServerInputWithError(serverURL ?: "", "Failed to load server: ${errorToString(error.code)}")
+            activity.openServerInputWithError(serverURL ?: "", "${activity.getString(R.string.server_load_error)}: ${errorToString(error.code)}")
         }
         return null
     }
 
     override fun onNewSession(session: GeckoSession, uri: String): GeckoResult<GeckoSession>? {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
-        if (intent.resolveActivity(activity.packageManager) != null) {
-            activity.startActivity(intent)
+        if (activity.packageManager.resolveActivity(intent, PackageManager.MATCH_ALL) != null) {
+            activity.startActivity(Intent.createChooser(intent, activity.getString(R.string.url_app_chooser_title)))
+            Log.d("NavigationDelegate", "onNewSession: $uri - activity chooser started")
+        } else {
+            Log.w("NavigationDelegate", "onNewSession: $uri - activity not found")
         }
         return null
     }

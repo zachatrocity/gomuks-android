@@ -3,6 +3,8 @@
 
     <string name="server_url">Server URL</string>
     <string name="connect">Connect</string>
+    <string name="url_app_chooser_title">Which app to open link in?</string>
+    <string name="server_load_error">Failed to load server</string>
 
     <string name="preference_file_key">app.gomuks.android.server_settings</string>
     <string name="server_url_key">server_url</string>
