@@ -1,7 +1,10 @@
 package app.gomuks.android
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
@@ -30,6 +33,15 @@ class MainActivity : ComponentActivity() {
     private lateinit var navigation: NavigationDelegate
     private lateinit var session: GeckoSession
     private lateinit var runtime: GeckoRuntime
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (this::runtime.isInitialized) {
+            parseIntentURL(intent)?.let {
+                session.loadUri(it)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +73,7 @@ class MainActivity : ComponentActivity() {
                 ServerInput()
             }
         }
+        Log.i("GomuksMainActivity", "Initialization complete")
     }
 
     fun getServerURL(): String? {
@@ -74,9 +87,38 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun parseIntentURL(overrideIntent: Intent? = null): String? {
+        var serverURL = getServerURL() ?: return null
+        val intent = overrideIntent ?: this.intent
+        var targetURI = intent.data
+        if (intent.action == Intent.ACTION_VIEW && targetURI != null) {
+            if (targetURI.host == "matrix.to") {
+                targetURI = matrixToURLToMatrixURI(targetURI)
+                if (targetURI == null) {
+                    Log.w("GomuksMainActivity", "Failed to parse matrix.to URL ${intent.data}")
+                } else {
+                    Log.d("GomuksMainActivity", "Parsed matrix.to URL ${intent.data} -> $targetURI")
+                }
+            }
+            if (targetURI?.scheme == "matrix") {
+                serverURL = Uri.parse(serverURL)
+                    .buildUpon()
+                    .encodedFragment("/uri/${Uri.encode(targetURI.toString())}")
+                    .build()
+                    .toString()
+                Log.d("GomuksMainActivity", "Converted view intent $targetURI -> $serverURL")
+                return serverURL
+            }
+        }
+        if (overrideIntent != null) {
+            Log.w("GomuksMainActivity", "No intent URL found ${overrideIntent.action} ${overrideIntent.data}")
+            return null
+        }
+        return serverURL
+    }
+
     private fun loadWeb(): Boolean {
-        val serverURL = getServerURL() ?: return false
-        session.loadUri(serverURL)
+        session.loadUri(parseIntentURL() ?: return false)
         setContentView(view)
         return true
     }
@@ -113,4 +155,22 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
+
+private val matrixToFragmentRegex = Regex("^/([@#!][^/]+)(?:/(\\$[^/]+))?\$")
+
+fun matrixToURLToMatrixURI(mxto: Uri): Uri? {
+    val fragment = mxto.encodedFragment ?: return null
+    val (entity, eventID) = matrixToFragmentRegex.matchEntire(fragment)?.destructured ?: return null
+    val entityType = when (entity.getOrNull(0)) {
+        '@' -> "u"
+        '#' -> "r"
+        '!' -> "roomid"
+        else -> return null
+    }
+    var path = "$entityType/${Uri.encode(entity.substring(1))}"
+    if (eventID.isNotEmpty()) {
+        path += "/e/${Uri.encode(eventID.substring(1))}"
+    }
+    return Uri.Builder().scheme("matrix").encodedOpaquePart(path).build()
 }
