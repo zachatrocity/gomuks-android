@@ -1,0 +1,22 @@
+{
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "android@gomuks.app",
+      "strict_min_version": "130.0"
+    }
+  },
+  "name": "gomuks bridge",
+  "description": "gomuks web <-> android communication bridge",
+  "manifest_version": 2,
+  "permissions": [
+    "geckoViewAddons",
+    "nativeMessaging",
+    "nativeMessagingFromContent"
+  ],
+  "content_scripts": [{
+    "js": ["bridge.js"],
+    "run_at": "document_start",
+    "matches": ["<all_urls>"]
+  }],
+  "version": "0.1.0"
+}

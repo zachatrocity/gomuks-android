@@ -23,7 +23,7 @@ class NavigationDelegate(private val activity: MainActivity) : GeckoSession.Navi
         Log.e("NavigationDelegate", "onLoadError: $uri $error (${errorToString(error.category)}: ${errorToString(error.code)}")
         val serverURL = activity.getServerURL()
         if (uri == null || (serverURL != null && uri.trimEnd('/') == serverURL.trimEnd('/'))) {
-            activity.openServerInputWithError(serverURL ?: "", "${activity.getString(R.string.server_load_error)}: ${errorToString(error.code)}")
+            activity.openServerInputWithError("${activity.getString(R.string.server_load_error)}: ${errorToString(error.code)}")
         }
         return null
     }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1004353015207",
+    "project_id": "gomuks-web-1733093565096",
+    "storage_bucket": "gomuks-web-1733093565096.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1004353015207:android:d7d52dc7721606afa2fa82",
+        "android_client_info": {
+          "package_name": "app.gomuks.android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3HMmgu8uiBP-wfYBTHPb_qkMGUk6FvoE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
