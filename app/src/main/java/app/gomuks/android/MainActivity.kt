@@ -39,13 +39,26 @@ import org.mozilla.geckoview.WebExtension
 import java.util.UUID
 
 class MainActivity : ComponentActivity() {
+    companion object {
+        private var runtime: GeckoRuntime? = null
+
+        private fun getRuntime(activity: MainActivity): GeckoRuntime {
+            return runtime ?: run {
+                val rt = GeckoRuntime.create(activity)
+                rt.settings.enterpriseRootsEnabled = true
+                rt.settings.consoleOutputEnabled = true
+                rt.settings.doubleTapZoomingEnabled = false
+                runtime = rt
+                rt
+            }
+        }
+    }
     private val navigation = NavigationDelegate(this)
     private val messageDelegate = MessageDelegate(this)
     internal val portDelegate = PortDelegate(this)
 
     private lateinit var view: GeckoView
     private lateinit var session: GeckoSession
-    private lateinit var runtime: GeckoRuntime
 
     internal lateinit var sharedPref: SharedPreferences
     private lateinit var prefEnc: Encryption
@@ -55,7 +68,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (this::runtime.isInitialized) {
+        if (this::session.isInitialized) {
             parseIntentURL(intent)?.let {
                 session.loadUri(it)
             }
@@ -114,13 +127,9 @@ class MainActivity : ComponentActivity() {
         createNotificationChannels(this)
         view = GeckoView(this)
         session = GeckoSession()
-        runtime = GeckoRuntime.create(this)
+        val runtime = getRuntime(this)
         session.open(runtime)
         view.setSession(session)
-
-        runtime.settings.enterpriseRootsEnabled = true
-        runtime.settings.consoleOutputEnabled = true
-        runtime.settings.doubleTapZoomingEnabled = false
 
         session.promptDelegate = BasicGeckoViewPrompt(this)
         session.navigationDelegate = navigation
