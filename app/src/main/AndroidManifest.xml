@@ -44,7 +44,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:launchMode="singleTop"
+            android:launchMode="singleTask"
             android:theme="@style/Theme.Gomuks"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
