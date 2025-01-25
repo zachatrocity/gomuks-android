@@ -9,6 +9,7 @@ import org.mozilla.geckoview.GeckoResult
 import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoSession.PromptDelegate.FilePrompt
 import org.mozilla.geckoview.GeckoSession.PromptDelegate.PromptResponse
+import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
@@ -30,7 +31,7 @@ class GeckoPrompts(private val activity: ComponentActivity) : BasicGeckoViewProm
             return this
         }
         val uri = this
-        val temporalFile = java.io.File(activity.cacheDir, uri.getFileName())
+        val temporalFile = File(File(activity.cacheDir, "upload"), uri.getFileName())
         try {
             val inStream = activity.contentResolver.openInputStream(uri) as FileInputStream
             val outStream = FileOutputStream(temporalFile)

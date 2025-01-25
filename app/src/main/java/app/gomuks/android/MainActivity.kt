@@ -36,6 +36,7 @@ import org.mozilla.geckoview.GeckoRuntime
 import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoView
 import org.mozilla.geckoview.WebExtension
+import java.io.File
 import java.util.UUID
 
 class MainActivity : ComponentActivity() {
@@ -122,6 +123,8 @@ class MainActivity : ComponentActivity() {
         val runtime = getRuntime(this)
         session.open(runtime)
         view.setSession(session)
+
+        File(cacheDir, "upload").mkdirs()
 
         session.promptDelegate = promptDelegate
         session.navigationDelegate = navigation
