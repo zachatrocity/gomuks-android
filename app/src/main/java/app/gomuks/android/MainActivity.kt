@@ -56,6 +56,7 @@ class MainActivity : ComponentActivity() {
     private val navigation = NavigationDelegate(this)
     private val messageDelegate = MessageDelegate(this)
     internal val portDelegate = PortDelegate(this)
+    private val promptDelegate = GeckoPrompts(this)
 
     private lateinit var view: GeckoView
     private lateinit var session: GeckoSession
@@ -65,15 +66,6 @@ class MainActivity : ComponentActivity() {
     internal lateinit var deviceID: UUID
 
     internal var port: WebExtension.Port? = null
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        if (this::session.isInitialized) {
-            parseIntentURL(intent)?.let {
-                session.loadUri(it)
-            }
-        }
-    }
 
     private fun initSharedPref() {
         sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE)
@@ -131,7 +123,7 @@ class MainActivity : ComponentActivity() {
         session.open(runtime)
         view.setSession(session)
 
-        session.promptDelegate = BasicGeckoViewPrompt(this)
+        session.promptDelegate = promptDelegate
         session.navigationDelegate = navigation
 
         val sessWebExtController = session.webExtensionController
@@ -208,6 +200,15 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         Log.i("GomuksMainActivity", "onDestroy")
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (this::session.isInitialized) {
+            parseIntentURL(intent)?.let {
+                session.loadUri(it)
+            }
+        }
     }
 
     fun getServerURL(): String? {

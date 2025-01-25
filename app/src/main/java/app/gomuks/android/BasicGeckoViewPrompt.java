@@ -1,17 +1,12 @@
 package app.gomuks.android;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ActivityNotFoundException;
-import android.content.ClipData;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.net.Uri;
 import android.os.Build;
 import android.text.InputType;
 import android.text.format.DateFormat;
@@ -47,14 +42,10 @@ import org.mozilla.geckoview.GeckoSession;
 import org.mozilla.geckoview.GeckoSession.PermissionDelegate.MediaSource;
 import org.mozilla.geckoview.SlowScriptResponse;
 
-final class BasicGeckoViewPrompt implements GeckoSession.PromptDelegate {
-    protected static final String LOGTAG = "BasicGeckoViewPrompt";
+public class BasicGeckoViewPrompt implements GeckoSession.PromptDelegate {
+    private static final String LOGTAG = "BasicGeckoViewPrompt";
 
     private final Activity mActivity;
-    public int filePickerRequestCode = 1;
-    private int mFileType;
-    private GeckoResult<PromptResponse> mFileResponse;
-    private FilePrompt mFilePrompt;
 
     public BasicGeckoViewPrompt(final Activity activity) {
         mActivity = activity;
@@ -850,103 +841,6 @@ final class BasicGeckoViewPrompt implements GeckoSession.PromptDelegate {
                     }
                 });
         return res;
-    }
-
-    @Override
-    @TargetApi(19)
-    public GeckoResult<PromptResponse> onFilePrompt(GeckoSession session, FilePrompt prompt) {
-        final Activity activity = mActivity;
-        if (activity == null) {
-            return GeckoResult.fromValue(prompt.dismiss());
-        }
-
-        // Merge all given MIME types into one, using wildcard if needed.
-        String mimeType = null;
-        String mimeSubtype = null;
-        if (prompt.mimeTypes != null) {
-            for (final String rawType : prompt.mimeTypes) {
-                final String normalizedType = rawType.trim().toLowerCase(Locale.ROOT);
-                final int len = normalizedType.length();
-                int slash = normalizedType.indexOf('/');
-                if (slash < 0) {
-                    slash = len;
-                }
-                final String newType = normalizedType.substring(0, slash);
-                final String newSubtype = normalizedType.substring(Math.min(slash + 1, len));
-                if (mimeType == null) {
-                    mimeType = newType;
-                } else if (!mimeType.equals(newType)) {
-                    mimeType = "*";
-                }
-                if (mimeSubtype == null) {
-                    mimeSubtype = newSubtype;
-                } else if (!mimeSubtype.equals(newSubtype)) {
-                    mimeSubtype = "*";
-                }
-            }
-        }
-
-        final Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType(
-                (mimeType != null ? mimeType : "*") + '/' + (mimeSubtype != null ? mimeSubtype : "*"));
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
-        if (prompt.type == FilePrompt.Type.MULTIPLE) {
-            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-        }
-        if (prompt.mimeTypes.length > 0) {
-            intent.putExtra(Intent.EXTRA_MIME_TYPES, prompt.mimeTypes);
-        }
-
-        GeckoResult<PromptResponse> res = new GeckoResult<PromptResponse>();
-
-        try {
-            mFileResponse = res;
-            mFilePrompt = prompt;
-            activity.startActivityForResult(intent, filePickerRequestCode);
-        } catch (final ActivityNotFoundException e) {
-            Log.e(LOGTAG, "Cannot launch activity", e);
-            return GeckoResult.fromValue(prompt.dismiss());
-        }
-
-        return res;
-    }
-
-    public void onFileCallbackResult(final int resultCode, final Intent data) {
-        if (mFileResponse == null) {
-            return;
-        }
-
-        final GeckoResult<PromptResponse> res = mFileResponse;
-        mFileResponse = null;
-
-        final FilePrompt prompt = mFilePrompt;
-        mFilePrompt = null;
-
-        if (resultCode != Activity.RESULT_OK || data == null) {
-            res.complete(prompt.dismiss());
-            return;
-        }
-
-        final Uri uri = data.getData();
-        final ClipData clip = data.getClipData();
-
-        if (prompt.type == FilePrompt.Type.SINGLE
-                || (prompt.type == FilePrompt.Type.MULTIPLE && clip == null)) {
-            res.complete(prompt.confirm(mActivity, uri));
-        } else if (prompt.type == FilePrompt.Type.MULTIPLE) {
-            if (clip == null) {
-                Log.w(LOGTAG, "No selected file");
-                res.complete(prompt.dismiss());
-                return;
-            }
-            final int count = clip.getItemCount();
-            final ArrayList<Uri> uris = new ArrayList<>(count);
-            for (int i = 0; i < count; i++) {
-                uris.add(clip.getItemAt(i).getUri());
-            }
-            res.complete(prompt.confirm(mActivity, uris.toArray(new Uri[uris.size()])));
-        }
     }
 
     public GeckoResult<Integer> onPermissionPrompt(
