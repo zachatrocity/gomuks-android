@@ -180,6 +180,36 @@ class MainActivity : ComponentActivity() {
         Log.i("GomuksMainActivity", "Initialization complete")
     }
 
+    override fun onStart() {
+        super.onStart()
+        Log.i("GomuksMainActivity", "onStart")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.i("GomuksMainActivity", "onPause")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.i("GomuksMainActivity", "onResume")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.i("GomuksMainActivity", "onStop")
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        Log.i("GomuksMainActivity", "onRestart")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.i("GomuksMainActivity", "onDestroy")
+    }
+
     fun getServerURL(): String? {
         return sharedPref.getString(getString(R.string.server_url_key), null)
     }
