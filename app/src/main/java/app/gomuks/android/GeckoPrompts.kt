@@ -26,6 +26,9 @@ class GeckoPrompts(private val activity: ComponentActivity) : BasicGeckoViewProm
     }
 
     private fun Uri.toFileUri(): Uri {
+        if (this.scheme == "file") {
+            return this
+        }
         val uri = this
         val temporalFile = java.io.File(activity.cacheDir, uri.getFileName())
         try {
