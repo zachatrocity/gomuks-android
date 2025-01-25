@@ -9,6 +9,10 @@ import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.WebRequestError
 
 class NavigationDelegate(private val activity: MainActivity) : GeckoSession.NavigationDelegate {
+    companion object {
+        private const val LOGTAG = "Gomuks/NavigationDelegate"
+    }
+
     var canGoBack = false
 
     override fun onCanGoBack(session: GeckoSession, canGoBack: Boolean) {
@@ -20,7 +24,7 @@ class NavigationDelegate(private val activity: MainActivity) : GeckoSession.Navi
         uri: String?,
         error: WebRequestError
     ): GeckoResult<String>? {
-        Log.e("NavigationDelegate", "onLoadError: $uri $error (${errorToString(error.category)}: ${errorToString(error.code)}")
+        Log.e(LOGTAG, "onLoadError: $uri $error (${errorToString(error.category)}: ${errorToString(error.code)}")
         val serverURL = activity.getServerURL()
         if (uri == null || (serverURL != null && uri.trimEnd('/') == serverURL.trimEnd('/'))) {
             activity.openServerInputWithError("${activity.getString(R.string.server_load_error)}: ${errorToString(error.code)}")
@@ -32,9 +36,9 @@ class NavigationDelegate(private val activity: MainActivity) : GeckoSession.Navi
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
         if (activity.packageManager.resolveActivity(intent, PackageManager.MATCH_ALL) != null) {
             activity.startActivity(Intent.createChooser(intent, activity.getString(R.string.url_app_chooser_title)))
-            Log.d("NavigationDelegate", "onNewSession: $uri - activity chooser started")
+            Log.d(LOGTAG, "onNewSession: $uri - activity chooser started")
         } else {
-            Log.w("NavigationDelegate", "onNewSession: $uri - activity not found")
+            Log.w(LOGTAG, "onNewSession: $uri - activity not found")
         }
         return null
     }

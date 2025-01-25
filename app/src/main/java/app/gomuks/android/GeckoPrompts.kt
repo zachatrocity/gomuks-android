@@ -16,7 +16,7 @@ import java.io.IOException
 
 class GeckoPrompts(private val activity: ComponentActivity) : BasicGeckoViewPrompt(activity) {
     companion object {
-        private const val LOGTAG = "GeckoPrompts"
+        private const val LOGTAG = "Gomuks/GeckoPrompts"
     }
 
     private var currentFileResponse: GeckoResult<PromptResponse>? = null
@@ -72,7 +72,7 @@ class GeckoPrompts(private val activity: ComponentActivity) : BasicGeckoViewProm
             && (prompt.type == FilePrompt.Type.SINGLE
                 || (prompt.type == FilePrompt.Type.MULTIPLE && result.clip == null))) {
             val fileURI = result.uri.toFileUri()
-            Log.d(LOGTAG, "onFileCallbackResult -> ${result.uri} -> ${fileURI}")
+            Log.d(LOGTAG, "onFileCallbackResult -> ${result.uri} -> $fileURI")
             res.complete(prompt.confirm(activity, fileURI))
         } else if (result.clip != null && prompt.type == FilePrompt.Type.MULTIPLE) {
             Log.d(LOGTAG, "onFileCallbackResult -> multiple items")

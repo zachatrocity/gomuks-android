@@ -41,6 +41,7 @@ import java.util.UUID
 
 class MainActivity : ComponentActivity() {
     companion object {
+        private const val LOGTAG = "Gomuks/MainActivity"
         private var runtime: GeckoRuntime? = null
 
         private fun getRuntime(activity: MainActivity): GeckoRuntime {
@@ -78,9 +79,9 @@ class MainActivity : ComponentActivity() {
                     putString(getString(R.string.device_id_key), deviceID.toString())
                     apply()
                 }
-                Log.d("GomuksMainActivity", "Generated new device ID $deviceID")
+                Log.d(LOGTAG, "Generated new device ID $deviceID")
             } else {
-                Log.d("GomuksMainActivity", "Parsing UUID $it")
+                Log.d(LOGTAG, "Parsing UUID $it")
                 deviceID = UUID.fromString(it)
             }
         }
@@ -109,7 +110,7 @@ class MainActivity : ComponentActivity() {
         try {
             return Triple(serverURL, username, prefEnc.decrypt(encPassword))
         } catch (e: Exception) {
-            Log.e("GomuksMainActivity", "Failed to decrypt password", e)
+            Log.e(LOGTAG, "Failed to decrypt password", e)
             return null
         }
     }
@@ -135,23 +136,23 @@ class MainActivity : ComponentActivity() {
             .accept(
                 { extension ->
                     if (extension != null) {
-                        Log.i("GomuksMainActivity", "Extension installed: $extension")
+                        Log.i(LOGTAG, "Extension installed: $extension")
                         sessWebExtController.setMessageDelegate(
                             extension,
                             messageDelegate,
                             "gomuksAndroid"
                         )
                     } else {
-                        Log.e("GomuksMainActivity", "Installed extension is null?")
+                        Log.e(LOGTAG, "Installed extension is null?")
                     }
                 },
-                { e -> Log.e("GomuksMainActivity", "Error registering WebExtension", e) }
+                { e -> Log.e(LOGTAG, "Error registering WebExtension", e) }
             )
 
         CoroutineScope(Dispatchers.Main).launch {
             tokenFlow.collect { pushToken ->
                 Log.i(
-                    "GomuksMainActivity",
+                    LOGTAG,
                     "Received push token from messaging service: $pushToken"
                 )
                 portDelegate.registerPush(port ?: return@collect, pushToken)
@@ -172,37 +173,37 @@ class MainActivity : ComponentActivity() {
                 ServerInput()
             }
         }
-        Log.i("GomuksMainActivity", "Initialization complete")
+        Log.i(LOGTAG, "Initialization complete")
     }
 
     override fun onStart() {
         super.onStart()
-        Log.i("GomuksMainActivity", "onStart")
+        Log.i(LOGTAG, "onStart")
     }
 
     override fun onPause() {
         super.onPause()
-        Log.i("GomuksMainActivity", "onPause")
+        Log.i(LOGTAG, "onPause")
     }
 
     override fun onResume() {
         super.onResume()
-        Log.i("GomuksMainActivity", "onResume")
+        Log.i(LOGTAG, "onResume")
     }
 
     override fun onStop() {
         super.onStop()
-        Log.i("GomuksMainActivity", "onStop")
+        Log.i(LOGTAG, "onStop")
     }
 
     override fun onRestart() {
         super.onRestart()
-        Log.i("GomuksMainActivity", "onRestart")
+        Log.i(LOGTAG, "onRestart")
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.i("GomuksMainActivity", "onDestroy")
+        Log.i(LOGTAG, "onDestroy")
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -233,9 +234,9 @@ class MainActivity : ComponentActivity() {
             if (targetURI.host == "matrix.to") {
                 targetURI = matrixToURLToMatrixURI(targetURI)
                 if (targetURI == null) {
-                    Log.w("GomuksMainActivity", "Failed to parse matrix.to URL ${intent.data}")
+                    Log.w(LOGTAG, "Failed to parse matrix.to URL ${intent.data}")
                 } else {
-                    Log.d("GomuksMainActivity", "Parsed matrix.to URL ${intent.data} -> $targetURI")
+                    Log.d(LOGTAG, "Parsed matrix.to URL ${intent.data} -> $targetURI")
                 }
             }
             if (targetURI?.scheme == "matrix") {
@@ -244,13 +245,13 @@ class MainActivity : ComponentActivity() {
                     .encodedFragment("/uri/${Uri.encode(targetURI.toString())}")
                     .build()
                     .toString()
-                Log.d("GomuksMainActivity", "Converted view intent $targetURI -> $serverURL")
+                Log.d(LOGTAG, "Converted view intent $targetURI -> $serverURL")
                 return serverURL
             }
         }
         if (overrideIntent != null) {
             Log.w(
-                "GomuksMainActivity",
+                LOGTAG,
                 "No intent URL found ${overrideIntent.action} ${overrideIntent.data}"
             )
             return null

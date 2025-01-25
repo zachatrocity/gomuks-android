@@ -8,40 +8,47 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.TimeSource
 
 class MessageDelegate(private val activity: MainActivity) : WebExtension.MessageDelegate {
+    companion object {
+        private const val LOGTAG = "Gomuks/MessageDelegate"
+    }
+
     override fun onConnect(port: WebExtension.Port) {
         port.setDelegate(activity.portDelegate)
         activity.port = port
-        Log.d("MessageDelegate", "Port connected ${port.name}")
+        Log.d(LOGTAG, "Port connected ${port.name}")
     }
 }
 
 class PortDelegate(private val activity: MainActivity) : WebExtension.PortDelegate {
+    companion object {
+        private const val LOGTAG = "Gomuks/PortDelegate"
+    }
     private var lastPushReg: TimeSource.Monotonic.ValueTimeMark? = null
 
     override fun onPortMessage(message: Any, port: WebExtension.Port) {
         if (message is JSONObject) {
-            Log.d("PortDelegate", "Received message from web: $message")
+            Log.d(LOGTAG, "Received message from web: $message")
             when (val evtType = message.getString("event")) {
                 "not_gomuks" -> {
-                    Log.i("PortDelegate", "Web page is not gomuks")
+                    Log.i(LOGTAG, "Web page is not gomuks")
                     activity.openServerInputWithError(activity.getString(R.string.not_gomuks_error))
                 }
 
                 "ready" -> {
-                    Log.i("PortDelegate", "Web client loaded")
+                    Log.i(LOGTAG, "Web client loaded")
                     sendAuthCredentials(port)
                 }
 
                 "auth_fail" -> {
                     val failMsg = message.getString("error")
-                    Log.i("PortDelegate", "Got auth fail event $failMsg")
+                    Log.i(LOGTAG, "Got auth fail event $failMsg")
                     activity.openServerInputWithError(
                         "${activity.getString(R.string.authentication_failed_error)}: $failMsg"
                     )
                 }
 
                 "connected" -> {
-                    Log.i("PortDelegate", "Client connected to WebSocket")
+                    Log.i(LOGTAG, "Client connected to WebSocket")
                     val now = TimeSource.Monotonic.markNow()
                     val pushToken = activity.sharedPref.getString(
                         activity.getString(R.string.push_token_key),
@@ -53,15 +60,15 @@ class PortDelegate(private val activity: MainActivity) : WebExtension.PortDelega
                     }
                 }
 
-                else -> Log.d("PortDelegate", "Unknown web command $evtType")
+                else -> Log.d(LOGTAG, "Unknown web command $evtType")
             }
         } else {
-            Log.d("PortDelegate", "Received message from web with unexpected type: $message")
+            Log.d(LOGTAG, "Received message from web with unexpected type: $message")
         }
     }
 
     override fun onDisconnect(port: WebExtension.Port) {
-        Log.d("MessageDelegate", "Port disconnected ${port.name}")
+        Log.d(LOGTAG, "Port disconnected ${port.name}")
         if (port == activity.port) {
             activity.port = null
         }
@@ -83,9 +90,9 @@ class PortDelegate(private val activity: MainActivity) : WebExtension.PortDelega
                     )
                 )
             )
-            Log.i("PortDelegate", "Sent auth credentials")
+            Log.i(LOGTAG, "Sent auth credentials")
         } else {
-            Log.w("PortDelegate", "No credentials found")
+            Log.w(LOGTAG, "No credentials found")
             activity.openServerInputWithError(activity.getString(R.string.no_credentials_found_error))
         }
     }
@@ -103,6 +110,6 @@ class PortDelegate(private val activity: MainActivity) : WebExtension.PortDelega
                 )
             )
         )
-        Log.i("PortDelegate", "Sent push registration")
+        Log.i(LOGTAG, "Sent push registration")
     }
 }

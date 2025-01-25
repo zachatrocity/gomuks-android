@@ -13,7 +13,7 @@ import kotlin.math.min
 
 class BetterGetContent : ActivityResultContract<BetterGetContent.Params, Result?>() {
     companion object {
-        private const val LOGTAG = "BetterGetContent"
+        private const val LOGTAG = "Gomuks/BetterGetContent"
     }
 
     class Params(

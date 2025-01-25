@@ -21,6 +21,10 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
 class MessagingService : FirebaseMessagingService() {
+    companion object {
+        private const val LOGTAG = "Gomuks/MessagingService"
+    }
+
     override fun onNewToken(token: String) {
         val sharedPref =
             getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE)
@@ -36,22 +40,22 @@ class MessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         val pushEncKey = getExistingPushEncryptionKey(this)
         if (pushEncKey == null) {
-            Log.e("GomuksMessagingService", "No push encryption key found to handle $message")
+            Log.e(LOGTAG, "No push encryption key found to handle $message")
             return
         }
         val decryptedPayload: String = try {
             Encryption.fromPlainKey(pushEncKey).decrypt(message.data.getValue("payload"))
         } catch (e: Exception) {
-            Log.e("GomuksMessagingService", "Failed to decrypt $message", e)
+            Log.e(LOGTAG, "Failed to decrypt $message", e)
             return
         }
         val data = try {
             Json.decodeFromString<PushData>(decryptedPayload)
         } catch (e: Exception) {
-            Log.e("GomuksMessagingService", "Failed to parse $decryptedPayload as JSON", e)
+            Log.e(LOGTAG, "Failed to parse $decryptedPayload as JSON", e)
             return
         }
-        Log.i("GomuksMessagingService", "Decrypted payload: $data")
+        Log.i(LOGTAG, "Decrypted payload: $data")
         if (!data.dismiss.isNullOrEmpty()) {
             with(NotificationManagerCompat.from(this)) {
                 for (dismiss in data.dismiss) {
