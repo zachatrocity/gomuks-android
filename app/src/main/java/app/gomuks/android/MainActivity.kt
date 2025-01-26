@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
+import android.os.Parcelable
 import android.util.Base64
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -34,14 +35,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.mozilla.geckoview.GeckoRuntime
 import org.mozilla.geckoview.GeckoSession
+import org.mozilla.geckoview.GeckoSession.ProgressDelegate
 import org.mozilla.geckoview.GeckoView
 import org.mozilla.geckoview.WebExtension
 import java.io.File
 import java.util.UUID
 
+
 class MainActivity : ComponentActivity() {
     companion object {
         private const val LOGTAG = "Gomuks/MainActivity"
+        private const val BUNDLE_KEY = "gecko"
         private var runtime: GeckoRuntime? = null
 
         private fun getRuntime(activity: MainActivity): GeckoRuntime {
@@ -62,6 +66,7 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var view: GeckoView
     private lateinit var session: GeckoSession
+    private var sessionState: GeckoSession.SessionState? = null
 
     internal lateinit var sharedPref: SharedPreferences
     private lateinit var prefEnc: Encryption
@@ -127,6 +132,16 @@ class MainActivity : ComponentActivity() {
 
         File(cacheDir, "upload").mkdirs()
 
+        session.progressDelegate = object : ProgressDelegate {
+            override fun onSessionStateChange(
+                session: GeckoSession,
+                newState: GeckoSession.SessionState
+            ) {
+                super.onSessionStateChange(session, newState)
+                Log.d(LOGTAG, "onSessionStateChange $newState")
+                sessionState = newState
+            }
+        }
         session.promptDelegate = promptDelegate
         session.navigationDelegate = navigation
 
@@ -168,17 +183,22 @@ class MainActivity : ComponentActivity() {
                 finish()
             }
         })
-        if (!loadWeb()) {
+        val parcel = savedInstanceState?.getParcelable(BUNDLE_KEY, GeckoSession.SessionState::class.java)
+        if (parcel != null) {
+            session.restoreState(parcel)
+            setContentView(view)
+        } else if (!loadWeb()) {
             setContent {
                 ServerInput()
             }
         }
-        Log.i(LOGTAG, "Initialization complete")
+        Log.i(LOGTAG, "Initialization complete (loaded saved state: ${parcel != null})")
     }
 
     override fun onStart() {
         super.onStart()
         Log.i(LOGTAG, "onStart")
+        session.setActive(true)
     }
 
     override fun onPause() {
@@ -194,6 +214,7 @@ class MainActivity : ComponentActivity() {
     override fun onStop() {
         super.onStop()
         Log.i(LOGTAG, "onStop")
+        session.setActive(false)
     }
 
     override fun onRestart() {
@@ -204,6 +225,12 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         Log.i(LOGTAG, "onDestroy")
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        Log.d(LOGTAG, "onSaveInstanceState $sessionState")
+        outState.putParcelable(BUNDLE_KEY, sessionState)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onNewIntent(intent: Intent) {
